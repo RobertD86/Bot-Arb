@@ -50,4 +50,26 @@ function getBuyBuySell(buySymbols, allSymbols){
         }
     }
     return buyBuySell
+
 }
+
+function getBuySellSell(buySymbols, allSymbols){
+    const buySellSell = []
+
+    for(let i = 0; i < buySymbols.length; i++){
+        const buy1 = buySymbols[i]
+
+        const right = allSymbols.filter(s => s.base === buy1.base && s.quote !== buy1.quote)
+
+        for(let j = 0; j < right.length; j++){
+            const sell1 = right[j]
+
+            const sell2 = allSymbols.find(s => s.base === sell1.quote && s.quote === buy1.quote)
+            if(!sell2) continue
+
+            buySellSell.push({buy1, sell1, sell2})
+        }
+    }
+    return buySellSell
+}
+
