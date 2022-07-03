@@ -7,7 +7,7 @@ const apiKey = process.env.API_KEY
 const apiSecret = process.env.SECRET_KEY
 const apiUrl = process.env.API_URL
 
-async function privateCall(path, data={}, method='GET'){
+async function privateCall(path, data={}, method= 'GET'){
     const timestamp = Date.now()
     const signature = crypto.createHmac('sha256', apiSecret)
         .update(`${querystring.stringify({...data, timestamp })}`)
@@ -30,7 +30,7 @@ async function privateCall(path, data={}, method='GET'){
 }
 
 async function newOrderBuy(symbol, quantity, price, side = 'BUY', type = 'MARKET'){
-    const data = {symbol, quantity, side, type}
+    const data = {symbol, side, type, quantity}
 
     if(price) data.price = price
     if(type === 'LIMIT') data.timeInForece = 'GTC'
@@ -39,7 +39,7 @@ async function newOrderBuy(symbol, quantity, price, side = 'BUY', type = 'MARKET
 }
 
 async function newOrderSell(symbol, quantity, price, side = 'SELL', type = 'MARKET'){
-    const data  = {symbol, quantity, side, type}
+    const data  = {symbol, side, type, quantity}
 
     if(price) data.price = price
     if(type === 'LIMIT') data.timeInForece = 'GTC'
