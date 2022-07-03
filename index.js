@@ -98,6 +98,31 @@ async function processBuyBuySell(buyBuySell){
     }
 }
 
+async function processBuySellSell(buySellsell){
+    for(let i=0; i < buySellsell.length; i++){
+        const candidate = buySellsell[i]
+
+        let priceBuy1 = BOOK[candidate.buy1.symbol]
+        if(!priceBuy1) continue
+        priceBuy1 = priceBuy1.ask
+
+        let priceSell1 = BOOK[candidate.sell1.symbol]
+        if(!priceSell1) continue
+        priceSell1 = priceSell1.bid
+
+        let priceSell2 = BOOK[candidate.sell2.symbol]
+        if(!priceSell2) continue
+        priceSell2 = priceSell2.bid
+
+        const crossRate = (1/priceBuy1) * priceSell1 * priceSell2
+
+        if(crossRate > PROFITABILITY){
+            console.log(`Oportunidade BSS ${candidate.buy1.symbol} ==> ${candidate.sell1.symbol} ==> ${candidate.sell2.symbol}`)
+        }
+
+    }
+}
+
 async function process(){
     const allSymbols = await exchangeInfo()
     console.log('Existem ' + allSymbols.length + ' pares sendo negociados.')
@@ -115,6 +140,7 @@ async function process(){
         console.clear()
         console.log(new Date())
         processBuyBuySell(buyBuySell)
+        processBuySellSell(buySellSell)
     }, 10000)
 }
 
