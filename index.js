@@ -129,7 +129,7 @@ async function processBuyBuySell(buyBuySell){
                                 console.log("\033[0;32mLucro em U$$:\033[0m ", Lucro);
                                }
                         console.log('------------------------------------------------------------------')  
-                        bot.telegram.sendMessage(497705044,'--------------------------------------------------------------\n' + new Date()+'\n' + `\n3° Operação de Sell Iniciada...\nSymbol: ${candidate.sell1.symbol}\nOrder: ${SellOrder.orderId}\nStatus: ${SellOrder.status}\nQty: ${SellOrder.cummulativeQuoteQty}` + '\n--------------------------------------------------------------'); 
+                        bot.telegram.sendMessage(497705044,'--------------------------------------------------------------\n' + new Date()+'\n' + `\n3° Operação Sell Iniciada...\nSymbol: ${candidate.sell1.symbol}\nOrder: ${SellOrder.orderId}\nStatus: ${SellOrder.status}\nQty: ${SellOrder.cummulativeQuoteQty}\nLucro: ${Lucro}` + '\n--------------------------------------------------------------\nOperações finalizadas!')
                     }
                 }
             }
