@@ -1,6 +1,6 @@
 const axios = require('axios')
 const QUOTE = 'USDT'
-const AMOUNT = 40
+const AMOUNT = 20
 const PROFITABILITY = 1.000
 
 const { Telegraf } = require('telegraf')
@@ -94,7 +94,32 @@ async function processBuyBuySell(buyBuySell){
 
         if(crossRate > PROFITABILITY){
             console.log(`Oportunidade em BBS ${candidate.buy1.symbol} ==> ${candidate.buy2.symbol} ==> ${candidate.sell1.symbol}`)
-        }
+
+            const account = await api.accountInfo()
+            const coins = account.balances.filter(b => (b.asset) !== -1)
+
+            if(AMOUNT <= parseFloat(coins.find(c => c.asset === QUOTE).free)){
+
+                const buyOrder = await api.newOrderBuy(candidate.buy1.symbol,(AMOUNT/priceBuy1).toFixed(5))
+                console.log(`Order: ${buyOrder.orderId}`)
+                console.log(`Satus: ${buyOrder.status}`)
+                console.log(`Qty: ${buyOrder.origQty}`)
+
+                if(buyOrder.status === 'FILLED'){
+                    const buyOrder2 = await api.newOrderBuy(candidate.buy2.symbol, (buyOrder.origQty/priceBuy2).toFixed(5))
+                    console.log(`Order: ${buyOrder2.orderId}`)
+                    console.log(`Satus: ${buyOrder2.status}`)
+                    console.log(`Qty: ${buyOrder2.origQty}`)
+
+                    if(buyOrder2.status === 'FILLED'){
+                        const SellOrder = await api.newOrderSell(candidate.sell1.symbol, (buyOrder2.origQty))
+                        console.log(`Order: ${SellOrder.orderId}`)
+                        console.log(`Satus: ${SellOrder.status}`)
+                        console.log(`Qty: ${SellOrder.cummulativeQuoteQty}`)
+                    }
+                }
+            }
+       }
     }
 }
 
@@ -117,7 +142,7 @@ async function processBuySellSell(buySellsell){
         const crossRate = (1/priceBuy1) * priceSell1 * priceSell2
 
         if(crossRate > PROFITABILITY){
-            console.log(`Oportunidade BSS ${candidate.buy1.symbol} ==> ${candidate.sell1.symbol} ==> ${candidate.sell2.symbol}`)
+            console.log(`Oportunidade em BSS ${candidate.buy1.symbol} ==> ${candidate.sell1.symbol} ==> ${candidate.sell2.symbol}`)
         }
 
     }
@@ -136,12 +161,17 @@ async function process(){
     console.log('Existem ' + buySellSell.length + ' pares BSS')
 
 
-    setInterval(() =>{
+    setInterval(async() =>{
+        const account = await api.accountInfo()
+        const coins = account.balances.filter(b => (b.asset) !== -1)
         console.clear()
-        console.log(new Date())
+        console.log("==================================================================");
+        console.log('CARTEIRA');
+        console.log(coins)
+        console.log("==================================================================")
         processBuyBuySell(buyBuySell)
-        processBuySellSell(buySellSell)
-    }, 10000)
+        //processBuySellSell(buySellSell)
+    }, 5000)
 }
 
 process()
