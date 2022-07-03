@@ -1,7 +1,7 @@
 const axios = require('axios')
 const QUOTE = 'USDT'
 const AMOUNT = 20
-const PROFITABILITY = 1.000
+const PROFITABILITY = 1.003
 
 const { Telegraf } = require('telegraf')
 const bot = new Telegraf("5565586570:AAH_bA8rRJIYSyrIou3klsiGrGV08jndxuo")
@@ -157,6 +157,45 @@ async function processBuySellSell(buySellsell){
 
         if(crossRate > PROFITABILITY){
             console.log(`Oportunidade em BSS ${candidate.buy1.symbol} ==> ${candidate.sell1.symbol} ==> ${candidate.sell2.symbol}`)
+
+            const account = await api.accountInfo()
+            const coins = account.balances.filter(b => (b.asset) !== -1)
+
+            if(AMOUNT <= parseFloat(coins.find(c => c.asset === QUOTE).free)){
+
+                const buyOrder = await api.newOrderBuy(candidate.buy1.symbol,(AMOUNT/priceBuy1).toFixed(3))
+                console.log(`Order: ${buyOrder.orderId}`)
+                console.log(`Satus: ${buyOrder.status}`)
+                console.log(`Qty: ${buyOrder.origQty}`)
+                console.log('------------------------------------------------------------------')
+                bot.telegram.sendMessage(497705044,'--------------------------------------------------------------\n' + new Date()+'\n' + `\n1° Operação de Buy Iniciada...\nSymbol: ${candidate.buy1.symbol}\nOrder: ${buyOrder.orderId}\nStatus: ${buyOrder.status}\nQty: ${buyOrder.cummulativeQuoteQty}` + '\n--------------------------------------------------------------')
+
+                if(buyOrder.status === 'FILLED'){
+                    const sellOrder = await api.newOrderSell(candidate.sell1.symbol, (buyOrder.origQty*priceSell1).toFixed(3))
+                    console.log(`Order: ${sellOrder.orderId}`)
+                    console.log(`Satus: ${sellOrder.status}`)
+                    console.log(`Qty: ${sellOrder.origQty}`)
+                    console.log('------------------------------------------------------------------')
+                    bot.telegram.sendMessage(497705044,'--------------------------------------------------------------\n' + new Date()+'\n' + `\n2° Operação de Buy Iniciada...\nSymbol: ${candidate.sell1.symbol}\nOrder: ${sellOrder.orderId}\nStatus: ${sellOrder.status}\nQty: ${sellOrder.cummulativeQuoteQty}` + '\n--------------------------------------------------------------')
+
+                    if(sellOrder.status === 'FILLED'){
+                        const sellOrder2 = await api.newOrderSell(candidate.sell2.symbol, (sellOrder.origQty))
+                        console.log(`Order: ${sellOrder2.orderId}`)
+                        console.log(`Satus: ${sellOrder2.status}`)
+                        console.log(`Qty: ${sellOrder2.cummulativeQuoteQty}`)
+                        const Lucro = (sellOrder2.cummulativeQuoteQty - buyOrder.cummulativeQuoteQty).toFixed(2)
+
+                        if(Lucro < 0){
+                            console.log("\033[0;31mPrejuizo em U$$:\033[0m ", Lucro);
+                               }
+                        if(Lucro > 0){
+                                console.log("\033[0;32mLucro em U$$:\033[0m ", Lucro);
+                               }
+                        console.log('------------------------------------------------------------------')  
+                        bot.telegram.sendMessage(497705044,'--------------------------------------------------------------\n' + new Date()+'\n' + `\n3° Operação Sell Iniciada...\nSymbol: ${candidate.sell2.symbol}\nOrder: ${sellOrder2.orderId}\nStatus: ${sellOrder2.status}\nQty: ${sellOrder2.cummulativeQuoteQty}\nLucro: ${Lucro}` + '\n--------------------------------------------------------------\nOperações finalizadas!')
+                    }
+                }
+            }
         }
 
     }
@@ -184,7 +223,7 @@ async function process(){
         console.log(coins)
         console.log("==================================================================")
         processBuyBuySell(buyBuySell)
-        //processBuySellSell(buySellSell)
+        processBuySellSell(buySellSell)
     }, 5000)
 }
 
