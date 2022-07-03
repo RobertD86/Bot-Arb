@@ -30,7 +30,7 @@ async function privateCall(path, data={}, method='GET'){
 }
 
 async function newOrderBuy(symbol, quantity, price, side = 'BUY', type = 'MARKET'){
-    const data = {symbol, side, type, quantity}
+    const data = {symbol, quantity, side, type}
 
     if(price) data.price = price
     if(type === 'LIMIT') data.timeInForece = 'GTC'
@@ -39,7 +39,7 @@ async function newOrderBuy(symbol, quantity, price, side = 'BUY', type = 'MARKET
 }
 
 async function newOrderSell(symbol, quantity, price, side = 'SELL', type = 'MARKET'){
-    const data  = {symbol, side, type, quantity}
+    const data  = {symbol, quantity, side, type}
 
     if(price) data.price = price
     if(type === 'LIMIT') data.timeInForece = 'GTC'
